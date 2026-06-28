@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="imagr/png" href="Mikro.png.png">
+  <title>Language Translator</title>
+  <style>
+
+    /* ============================================================
+       RESET & BASE
+    ============================================================ */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #0f172a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 24px;
+    }
+
+    /* ============================================================
+       CARD
+    ============================================================ */
+    .card {
+      background: #1e293b;
+      border-radius: 20px;
+      padding: 36px;
+      width: 100%;
+      max-width: 760px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    /* ============================================================
+       HEADER
+    ============================================================ */
+    .header {
+      margin-bottom: 28px;
+    }
+
+    .header h1 {
+      color: #f8fafc;
+      font-size: 1.7rem;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+
+    .header p {
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+
+    /* ============================================================
+       LANGUAGE SELECTOR ROW
+    ============================================================ */
+    .lang-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .lang-row select {
+      flex: 1;
+      background: #0f172a;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.2s;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+
+    .lang-row select:focus {
+      border-color: #6366f1;
+    }
+
+    .swap-btn {
+      background: #334155;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      color: #94a3b8;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, color 0.2s, transform 0.2s;
+      flex-shrink: 0;
+    }
+
+    .swap-btn:hover {
+      background: #6366f1;
+      color: white;
+      transform: rotate(180deg);
+    }
+
+    /* ============================================================
+       TEXT PANELS
+    ============================================================ */
+    .panels {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .panel-header label {
+      color: #64748b;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      font-weight: 600;
+    }
+
+    .panel-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      color: #475569;
+      font-size: 0.95rem;
+      cursor: pointer;
+      padding: 4px 7px;
+      border-radius: 6px;
+      transition: background 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .icon-btn:hover {
+      background: #334155;
+      color: #a5b4fc;
+    }
+
+    textarea {
+      background: #0f172a;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      resize: none;
+      height: 190px;
+      line-height: 1.7;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+
+    textarea:focus {
+      border-color: #6366f1;
+    }
+
+    #output {
+      color: #a5b4fc;
+      cursor: default;
+    }
+
+    .char-count {
+      text-align: right;
+      font-size: 0.72rem;
+      color: #475569;
+      margin-top: 5px;
+    }
+
+    .char-count.warn {
+      color: #f87171;
+    }
+
+    /* ============================================================
+       TRANSLATE BUTTON
+    ============================================================ */
+    .translate-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      letter-spacing: 0.2px;
+    }
+
+    .translate-btn:hover:not(:disabled) {
+      opacity: 0.88;
+      transform: translateY(-2px);
+    }
+
+    .translate-btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .translate-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    /* ============================================================
+       SPINNER
+    ============================================================ */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ============================================================
+       STATUS BAR
+    ============================================================ */
+    #status {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #475569;
+      margin-top: 14px;
+      min-height: 20px;
+      transition: color 0.2s;
+    }
+
+    #status.error  { color: #f87171; }
+    #status.success { color: #4ade80; }
+
+    /* ============================================================
+       SHORTCUT HINT
+    ============================================================ */
+    .hint {
+      text-align: center;
+      font-size: 0.72rem;
+      color: #334155;
+      margin-top: 10px;
+    }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @media (max-width: 540px) {
+      .panels {
+        flex-direction: column;
+      }
+      .card {
+        padding: 24px 18px;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="card">
+
+    <!-- HEADER -->
+    <div class="header">
+      <h1>🌐 MikroVerse :Language Translator</h1>
+      <p>Powered by MyMemory API &mdash; Free, no API key required</p>
+    </div>
+
+    <!-- LANGUAGE SELECTOR ROW -->
+    <div class="lang-row">
+      <select id="sourceLang">
+        <option value="en"> English</option>
+        <option value="es"> Spanish</option>
+        <option value="fr"> French</option>
+        <option value="de"> German</option>
+        <option value="zh"> Chinese</option>
+        <option value="ja"> Japanese</option>
+        <option value="ar"> Arabic</option>
+        <option value="hi"> Hindi</option>
+        <option value="pt"> Portuguese</option>
+        <option value="ru"> Russian</option>
+        <option value="ko"> Korean</option>
+        <option value="it"> Italian</option>
+        <option value="tr"> Turkish</option>
+        <option value="nl"> Dutch</option>
+        <option value="sv"> Swedish</option>
+        <option value="pl"> Polish</option>
+        <option value="uk"> Ukrainian</option>
+        <option value="bn"> Bengali</option>
+        <option value="ta"> Tamil</option>
+        <option value="vi"> Vietnamese</option>
+      </select>
+
+      <button class="swap-btn" onclick="swapLanguages()" title="Swap languages">⇄</button>
+
+      <select id="targetLang">
+        <option value="es"> Spanish</option>
+        <option value="en"> English</option>
+        <option value="fr"> French</option>
+        <option value="de"> German</option>
+        <option value="zh"> Chinese</option>
+        <option value="ja"> Japanese</option>
+        <option value="ar"> Arabic</option>
+        <option value="hi"> Hindi</option>
+        <option value="pt"> Portuguese</option>
+        <option value="ru"> Russian</option>
+        <option value="ko"> Korean</option>
+        <option value="it"> Italian</option>
+        <option value="tr"> Turkish</option>
+        <option value="nl"> Dutch</option>
+        <option value="sv"> Swedish</option>
+        <option value="pl">Polish</option>
+        <option value="uk">Ukrainian</option>
+        <option value="bn"> Bengali</option>
+        <option value="ta"> Tamil</option>
+        <option value="vi"> Vietnamese</option>
+      </select>
+    </div>
+
+    <!-- TEXT PANELS -->
+    <div class="panels">
+
+      <!-- INPUT PANEL -->
+      <div class="panel">
+        <div class="panel-header">
+          <label>Source Text</label>
+          <div class="panel-actions">
+            <button class="icon-btn" onclick="clearAll()" title="Clear text">✕ Clear</button>
+          </div>
+        </div>
+        <textarea
+          id="inputText"
+          placeholder="Type or paste text here..."
+          oninput="updateCharCount()"
+        ></textarea>
+        <div class="char-count" id="charCount">0 / 500</div>
+      </div>
+
+      <!-- OUTPUT PANEL -->
+      <div class="panel">
+        <div class="panel-header">
+          <label>Translation</label>
+          <div class="panel-actions">
+            <button class="icon-btn" onclick="copyText()" title="Copy translation">📋 Copy</button>
+            <button class="icon-btn" onclick="speakText()" title="Listen to translation">🔊 Listen</button>
+          </div>
+        </div>
+        <textarea
+          id="output"
+          readonly
+          placeholder="Translation will appear here..."
+        ></textarea>
+      </div>
+
+    </div>
+
+    <!-- TRANSLATE BUTTON -->
+    <button class="translate-btn" id="translateBtn" onclick="handleTranslate()">
+      <div class="spinner" id="spinner"></div>
+      <span id="btnText">Translate →</span>
+    </button>
+
+    <!-- STATUS -->
+    <p id="status">Ready. Enter text and click Translate.</p>
+    <p class="hint">Tip: Press Ctrl + Enter to translate quickly</p>
+
+  </div>
+
+  <!-- ============================================================
+       JAVASCRIPT  (All logic lives here — no external libraries)
+  ============================================================ -->
+  <script>
+
+    /* ----------------------------------------------------------
+       1. CHARACTER COUNTER
+    ---------------------------------------------------------- */
+    function updateCharCount() {
+      const text   = document.getElementById('inputText').value;
+      const count  = text.length;
+      const el     = document.getElementById('charCount');
+      el.textContent = `${count} / 500`;
+      el.className   = count > 450 ? 'char-count warn' : 'char-count';
+    }
+
+    /* ----------------------------------------------------------
+       2. CLEAR BOTH PANELS
+    ---------------------------------------------------------- */
+    function clearAll() {
+      document.getElementById('inputText').value = '';
+      document.getElementById('output').value    = '';
+      updateCharCount();
+      setStatus('Cleared.', '');
+    }
+
+    /* ----------------------------------------------------------
+       3. SWAP SOURCE ↔ TARGET LANGUAGES + TEXT
+    ---------------------------------------------------------- */
+    function swapLanguages() {
+      // Swap dropdowns
+      const srcSelect = document.getElementById('sourceLang');
+      const tgtSelect = document.getElementById('targetLang');
+      const tempLang  = srcSelect.value;
+      srcSelect.value = tgtSelect.value;
+      tgtSelect.value = tempLang;
+
+      // Swap textarea content
+      const inputEl  = document.getElementById('inputText');
+      const outputEl = document.getElementById('output');
+      const tempText = inputEl.value;
+      inputEl.value  = outputEl.value;
+      outputEl.value = tempText;
+
+      updateCharCount();
+      setStatus('Languages swapped.', '');
+    }
+
+    /* ----------------------------------------------------------
+       4. COPY TRANSLATION TO CLIPBOARD
+    ---------------------------------------------------------- */
+    function copyText() {
+      const text = document.getElementById('output').value;
+      if (!text) {
+        setStatus('Nothing to copy yet.', 'error');
+        return;
+      }
+      navigator.clipboard.writeText(text)
+        .then(() => setStatus('✅ Copied to clipboard!', 'success'))
+        .catch(()  => setStatus('❌ Copy failed. Try manually selecting the text.', 'error'));
+    }
+
+    /* ----------------------------------------------------------
+       5. TEXT-TO-SPEECH  (Web Speech API — built into all modern browsers)
+    ---------------------------------------------------------- */
+    function speakText() {
+      const text       = document.getElementById('output').value;
+      const targetLang = document.getElementById('targetLang').value;
+
+      if (!text) {
+        setStatus('Nothing to speak yet.', 'error');
+        return;
+      }
+
+      // Stop any speech already playing
+      window.speechSynthesis.cancel();
+
+      const utterance  = new SpeechSynthesisUtterance(text);
+      utterance.lang   = targetLang;   // e.g. "es", "fr", "hi"
+      utterance.rate   = 0.9;          // slightly slower for clarity
+      utterance.pitch  = 1;
+
+      utterance.onstart = () => setStatus('🔊 Speaking...', 'success');
+      utterance.onend   = () => setStatus('✅ Done speaking.', 'success');
+      utterance.onerror = () => setStatus('❌ Speech not supported for this language.', 'error');
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    /* ----------------------------------------------------------
+       6. MAIN TRANSLATE FUNCTION
+    ---------------------------------------------------------- */
+    async function handleTranslate() {
+
+      // — Read values from the UI —
+      const text       = document.getElementById('inputText').value.trim();
+      const sourceLang = document.getElementById('sourceLang').value;
+      const targetLang = document.getElementById('targetLang').value;
+
+      // — Validate —
+      if (!text) {
+        setStatus('⚠️ Please enter some text first.', 'error');
+        return;
+      }
+      if (text.length > 500) {
+        setStatus('⚠️ Text exceeds 500 characters. Please shorten it.', 'error');
+        return;
+      }
+      if (sourceLang === targetLang) {
+        setStatus('⚠️ Source and target languages cannot be the same.', 'error');
+        return;
+      }
+
+      // — Show loading state —
+      setLoading(true);
+      setStatus('Translating...', '');
+
+      // — Build API URL —
+      // MyMemory is a free translation API.
+      // No signup or API key needed.
+      // Format: https://api.mymemory.translated.net/get?q=TEXT&langpair=SOURCE|TARGET
+      const encodedText = encodeURIComponent(text);
+      const url = `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=${sourceLang}|${targetLang}`;
+
+      // — Call the API —
+      try {
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // MyMemory response structure:
+        // data.responseStatus  → 200 = success
+        // data.responseData.translatedText → the result
+        if (data.responseStatus !== 200) {
+          throw new Error(data.responseDetails || 'Translation failed.');
+        }
+
+        const translated = data.responseData.translatedText;
+        document.getElementById('output').value = translated;
+        setStatus('✅ Translation complete!', 'success');
+
+      } catch (error) {
+        setStatus(`❌ ${error.message}`, 'error');
+        console.error('Translation error:', error);
+      } finally {
+        // Always turn off loading, whether success or fail
+        setLoading(false);
+      }
+    }
+
+    /* ----------------------------------------------------------
+       7. HELPER — Update button & spinner during loading
+    ---------------------------------------------------------- */
+    function setLoading(isLoading) {
+      const btn     = document.getElementById('translateBtn');
+      const spinner = document.getElementById('spinner');
+      const label   = document.getElementById('btnText');
+
+      btn.disabled          = isLoading;
+      spinner.style.display = isLoading ? 'block' : 'none';
+      label.textContent     = isLoading ? 'Translating...' : 'Translate →';
+    }
+
+    /* ----------------------------------------------------------
+       8. HELPER — Show a status message with optional styling
+    ---------------------------------------------------------- */
+    function setStatus(message, type) {
+      const el    = document.getElementById('status');
+      el.textContent = message;
+      el.className   = type;   // 'error', 'success', or ''
+    }
+
+    /* ----------------------------------------------------------
+       9. KEYBOARD SHORTCUT — Ctrl + Enter to translate
+    ---------------------------------------------------------- */
+    document.getElementById('inputText').addEventListener('keydown', function (e) {
+      if (e.ctrlKey && e.key === 'Enter') {
+        handleTranslate();
+      }
+    });
+
+  </script>
+</body>
+</html>
